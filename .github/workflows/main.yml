@@ -33,7 +33,7 @@ jobs:
         cd libsodium
         git checkout stable
         ./autogen.sh
-        emconfigure ./configure --disable-shared
+        emconfigure ./configure --prefix=$HOME/libsodium --disable-shared
         emmake make
         emmake make install
 
@@ -53,8 +53,8 @@ jobs:
         source_files=$(find src src/crypto src/common src/contrib/epee/include -name '*.cpp')
         emcc $source_files \
         -I src -I src/crypto -I src/common -I src/contrib/epee/include \
-        -I boost_1_76_0 -I/usr/local/include \
-        -L/usr/local/lib -lsodium \
+        -I boost_1_76_0 -I$HOME/libsodium/include \
+        -L$HOME/libsodium/lib -lsodium \
         -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
         --shell-file template.html --post-js post.js \
         -o build/debug/miner.html
