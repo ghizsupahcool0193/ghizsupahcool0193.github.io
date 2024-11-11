@@ -19,55 +19,35 @@ jobs:
     - name: Verify Emscripten
       run: emcc -v
 
-    - name: Install Boost
+    - name: Install dependencies
       run: |
-        wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz
-        tar xzf boost_1_76_0.tar.gz
-        cd boost_1_76_0
-        ./bootstrap.sh
-        ./b2 headers
+        sudo apt-get update
+        sudo apt-get install -y libboost-all-dev
 
-    - name: Install libsodium
+    - name: Build WASM (Debug)
       run: |
-        git clone https://github.com/jedisct1/libsodium.git
-        cd libsodium
-        git checkout stable
-        ./autogen.sh
-        emconfigure ./configure --prefix=$HOME/libsodium --disable-shared
-        emmake make
-        emmake make install
+        make
 
-    - name: Debug - List directory structure
+    - name: Build WASM (Release)
       run: |
-        echo "Project structure:"
-        find . -type d
-        
-    - name: Debug - List source files
-      run: |
-        echo "Source files:"
-        find src -name '*.cpp'
-
-    - name: Build WASM
-      run: |
-        mkdir -p build/debug
-        source_files=$(find src src/crypto src/common src/contrib/epee/include -name '*.cpp' -or -name '*.c')
-        emcc $source_files \
-        -I src -I src/crypto -I src/common -I src/contrib/epee/include \
-        -I boost_1_76_0 -I$HOME/libsodium/include \
-        -L$HOME/libsodium/lib -lsodium \
-        -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
-        -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
-        --shell-file template.html --post-js post.js \
-        -o build/debug/miner.html
+        make TYPE=release
 
     - name: Copy additional files
       run: |
         cp post.js build/debug/
         cp template.html build/debug/
+        cp post.js build/release/
+        cp template.html build/release/
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build/debug
+        publish_dir: ./build
+
+    - name: Start local server for testing
+      run: |
+        python -m http.server 8000 --directory build/debug &
+        sleep 5
+        curl http://localhost:8000/miner.html
