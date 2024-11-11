@@ -1,4 +1,4 @@
-name: Build and Deploy WASM Application
+name: Build and Deploy WASM
 
 on:
   push:
@@ -15,41 +15,32 @@ jobs:
 
     - name: Setup Emscripten
       uses: mymindstorm/setup-emsdk@v11
-      with:
-        version: 2.0.34
+
+    - name: Verify Emscripten
+      run: emcc -v
 
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential libboost-all-dev
+        sudo apt-get install -y libboost-all-dev
 
-    - name: Build WASM application
+    - name: Build WASM
       run: |
         mkdir -p build/debug
-        emcc -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
-          --proxy-to-worker \
-          --shell-file template.html \
-          --post-js post.js \
-          -I src -I src/crypto -I src/common -I src/contrib/epee/include \
-          -std=c++11 -O2 \
-          src/miner.cpp \
-          src/crypto/crypto-ops.c \
-          src/crypto/crypto-ops-data.c \
-          src/crypto/hash.c \
-          src/crypto/keccak.c \
-          src/common/base58.cpp \
-          -o build/debug/miner.html
+        emcc src/*.cpp src/crypto/*.cpp src/common/*.cpp src/contrib/epee/include/*.cpp \
+        -I src -I src/crypto -I src/common -I src/contrib/epee/include \
+        -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
+        --shell-file template.html --post-js post.js \
+        -o build/debug/miner.html
 
-    - name: Prepare for deployment
+    - name: Copy additional files
       run: |
-        mkdir public
-        cp build/debug/miner.html public/index.html
-        cp build/debug/miner.js public/
-        cp build/debug/miner.wasm public/
-        cp post.js public/
+        cp post.js build/debug/
+        cp template.html build/debug/
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public
+        publish_dir: ./build/debug
