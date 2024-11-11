@@ -32,7 +32,12 @@ jobs:
           --post-js post.js \
           -I src -I src/crypto -I src/common -I src/contrib/epee/include \
           -std=c++11 -O2 \
-          src/*.cpp src/crypto/*.cpp src/common/*.cpp \
+          src/miner.cpp \
+          src/crypto/crypto-ops.c \
+          src/crypto/crypto-ops-data.c \
+          src/crypto/hash.c \
+          src/crypto/keccak.c \
+          src/common/base58.cpp \
           -o build/debug/miner.html
 
     - name: Prepare for deployment
