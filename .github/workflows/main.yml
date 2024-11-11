@@ -24,10 +24,21 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libboost-all-dev
 
+    - name: Debug - List directory structure
+      run: |
+        echo "Project structure:"
+        find . -type d
+        
+    - name: Debug - List source files
+      run: |
+        echo "Source files:"
+        find src -name '*.cpp'
+
     - name: Build WASM
       run: |
         mkdir -p build/debug
-        emcc src/*.cpp src/crypto/*.cpp src/common/*.cpp src/contrib/epee/include/*.cpp \
+        source_files=$(find src src/crypto src/common src/contrib/epee/include -name '*.cpp')
+        emcc $source_files \
         -I src -I src/crypto -I src/common -I src/contrib/epee/include \
         -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
         --shell-file template.html --post-js post.js \
