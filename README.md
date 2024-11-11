@@ -1,3 +1,6 @@
+### Mirror
+This is an unofficial mirror of the original xmr-wasm project. This is simply a repository for deploying to Github Pages and other cloud infrastructure. 
+
 # A Monero WebAssembly based miner
 
 The core aim of this project is to provide a completely open source, browser based, Monero miner. It has a companion project, [my fork](https://github.com/jtgrassie/xmr-node-proxy) of Snipa's **xmr-node-proxy** which adds a WebSocket based branch for allowing this miner to connect through to various mining pools.
@@ -18,5 +21,4 @@ To test locally, just tack `run` onto the end of the above commands, which will 
 ## License
 
 Please see [LICENSE](LICENSE)
-
 
