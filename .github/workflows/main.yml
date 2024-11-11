@@ -50,12 +50,13 @@ jobs:
     - name: Build WASM
       run: |
         mkdir -p build/debug
-        source_files=$(find src src/crypto src/common src/contrib/epee/include -name '*.cpp')
+        source_files=$(find src src/crypto src/common src/contrib/epee/include -name '*.cpp' -or -name '*.c')
         emcc $source_files \
         -I src -I src/crypto -I src/common -I src/contrib/epee/include \
         -I boost_1_76_0 -I$HOME/libsodium/include \
         -L$HOME/libsodium/lib -lsodium \
-        -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
+        -s WASM=1 -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
+        -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
         --shell-file template.html --post-js post.js \
         -o build/debug/miner.html
 
