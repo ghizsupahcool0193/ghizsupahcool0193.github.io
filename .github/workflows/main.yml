@@ -1,0 +1,50 @@
+name: Build and Deploy WASM Application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v11
+      with:
+        version: 2.0.34
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libboost-all-dev
+
+    - name: Build WASM application
+      run: |
+        mkdir -p build/debug
+        emcc -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
+          --proxy-to-worker \
+          --shell-file template.html \
+          --post-js post.js \
+          -I src -I src/crypto -I src/common -I src/contrib/epee/include \
+          -std=c++11 -O2 \
+          src/*.cpp src/crypto/*.cpp src/common/*.cpp \
+          -o build/debug/miner.html
+
+    - name: Prepare for deployment
+      run: |
+        mkdir public
+        cp build/debug/miner.html public/index.html
+        cp build/debug/miner.js public/
+        cp build/debug/miner.wasm public/
+        cp post.js public/
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
