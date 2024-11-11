@@ -27,6 +27,16 @@ jobs:
         ./bootstrap.sh
         ./b2 headers
 
+    - name: Install libsodium
+      run: |
+        git clone https://github.com/jedisct1/libsodium.git
+        cd libsodium
+        git checkout stable
+        ./autogen.sh
+        emconfigure ./configure --disable-shared
+        emmake make
+        emmake make install
+
     - name: Debug - List directory structure
       run: |
         echo "Project structure:"
@@ -43,7 +53,8 @@ jobs:
         source_files=$(find src src/crypto src/common src/contrib/epee/include -name '*.cpp')
         emcc $source_files \
         -I src -I src/crypto -I src/common -I src/contrib/epee/include \
-        -I boost_1_76_0 \
+        -I boost_1_76_0 -I/usr/local/include \
+        -L/usr/local/lib -lsodium \
         -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
         --shell-file template.html --post-js post.js \
         -o build/debug/miner.html
