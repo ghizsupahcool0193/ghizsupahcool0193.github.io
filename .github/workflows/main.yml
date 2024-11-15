@@ -28,6 +28,17 @@ jobs:
         ./b2 headers
         echo "BOOST_ROOT=$PWD" >> $GITHUB_ENV
 
+    - name: Install and build sodium
+      run: |
+        wget https://download.libsodium.org/libsodium/releases/LATEST.tar.gz
+        gzip -d LATEST.tar.gz
+        tar -xf LATEST.tar
+        cd libsodium-stable
+        ./configure
+        make && make check
+        sudo make install
+      
+
     - name: Modify Makefile
       run: |
         sed -i 's|-I/opt/local/include|-I$(BOOST_ROOT)|g' Makefile
