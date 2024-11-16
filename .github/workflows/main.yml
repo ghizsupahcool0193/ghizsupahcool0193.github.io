@@ -9,7 +9,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
 
@@ -17,9 +16,9 @@ jobs:
       uses: mymindstorm/setup-emsdk@v11
 
     - name: Verify Emscripten
-      run: emcc -v
+      run: emcc -v /src/main.cpp
 
-    - name: Install and build Boost
+    - name: Download and build Boost
       run: |
         wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz
         tar xzf boost_1_76_0.tar.gz
@@ -28,31 +27,40 @@ jobs:
         ./b2 headers
         echo "BOOST_ROOT=$PWD" >> $GITHUB_ENV
 
-    - name: Install and build sodium
+    - name: Download and build sodium
       run: |
         wget https://download.libsodium.org/libsodium/releases/LATEST.tar.gz
-        gzip -d LATEST.tar.gz
-        tar -xf LATEST.tar
+        tar -xzf LATEST.tar.gz
         cd libsodium-stable
         ./configure
         make && make check
         sudo make install
-      
+
+    - name: Prepare libsodium for Emscripten
+      run: |
+        sudo mkdir -p /emsdk/upstream/emscripten/system/include
+        sudo mkdir -p /emsdk/upstream/emscripten/system/lib
+        sudo cp /usr/local/include/sodium.h /emsdk/upstream/emscripten/system/include/
+        sudo cp /usr/local/include/sodium/* /emsdk/upstream/emscripten/system/include/
+        sudo cp /usr/local/lib/libsodium.a /emsdk/upstream/emscripten/system/lib/
 
     - name: Modify Makefile
       run: |
-        sed -i 's|-I/opt/local/include|-I$(BOOST_ROOT)|g' Makefile
-        sed -i 's|CCPARAM = -s WASM=1|CCPARAM = -s WASM=1 -s USE_BOOST_HEADERS=1|g' Makefile
+        sed -i 's|-I/opt/local/include|-I$(BOOST_ROOT) -I/usr/local/include|g' Makefile
+        sed -i 's|CCPARAM = -s WASM=1|CCPARAM = -s WASM=1 -s USE_BOOST_HEADERS=1 -s USE_LIBSODIUM=1|g' Makefile
+        sed -i 's|LDFLAGS =|LDFLAGS = -L/usr/local/lib -lsodium|g' Makefile
 
     - name: Build WASM (Debug)
       run: make
       env:
         BOOST_ROOT: ${{ env.BOOST_ROOT }}
+        LIBSODIUM_ROOT: /usr/local
 
     - name: Build WASM (Release)
       run: make TYPE=release
       env:
         BOOST_ROOT: ${{ env.BOOST_ROOT }}
+        LIBSODIUM_ROOT: /usr/local
 
     - name: Copy additional files
       run: |
