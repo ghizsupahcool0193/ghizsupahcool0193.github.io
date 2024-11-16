@@ -12,8 +12,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Verify directory
+      run: pwd
+
     - name: Verify Makefile
-      run: cat /Makefile
+      run: cat Makefile && cat /Makefile
+
+
 
     - name: Setup Emscripten
       uses: mymindstorm/setup-emsdk@v11
