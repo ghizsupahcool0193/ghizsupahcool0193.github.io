@@ -40,8 +40,13 @@ jobs:
       run: |
         sudo mkdir -p /emsdk/upstream/emscripten/cache/sysroot/include
         sudo mkdir -p /emsdk/upstream/emscripten/cache/sysroot/lib
-        sudo cp -r /usr/local/include/sodium /emsdk/upstream/emscripten/cache/sysroot/include/
+        sudo cp -r /usr/local/include/sodium* /emsdk/upstream/emscripten/cache/sysroot/include/
         sudo cp /usr/local/lib/libsodium.a /emsdk/upstream/emscripten/cache/sysroot/lib/
+
+    - name: Verify libsodium setup
+      run: |
+        ls -R /emsdk/upstream/emscripten/cache/sysroot/include
+        ls -R /emsdk/upstream/emscripten/cache/sysroot/lib
 
     - name: Modify Makefile
       run: |
@@ -49,6 +54,7 @@ jobs:
         sed -i 's|CCPARAM = -s WASM=1|CCPARAM = -s WASM=1 -s USE_BOOST_HEADERS=1|g' Makefile
         sed -i 's|LDFLAGS =|LDFLAGS = -L/emsdk/upstream/emscripten/cache/sysroot/lib|g' Makefile
         sed -i 's|LIBS =|LIBS = /emsdk/upstream/emscripten/cache/sysroot/lib/libsodium.a|g' Makefile
+        sed -i '/^INCLUDE/s/$/ -I\/emsdk\/upstream\/emscripten\/cache\/sysroot\/include/' Makefile
 
     - name: Build WASM (Debug)
       run: make
