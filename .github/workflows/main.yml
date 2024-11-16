@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    -name: Verify Makefile
+    - name: Verify Makefile
       run: cat /Makefile
 
     - name: Setup Emscripten
