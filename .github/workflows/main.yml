@@ -12,17 +12,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Verify directory
-      run: pwd
-
-    - name: List directory contents
-      run: ls -a
-
-    - name: Verify Makefile
-      run: cat Makefile && cat /Makefile
-
-
-
     - name: Setup Emscripten
       uses: mymindstorm/setup-emsdk@v11
 
