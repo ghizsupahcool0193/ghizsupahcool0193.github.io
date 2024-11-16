@@ -15,6 +15,9 @@ jobs:
     - name: Verify directory
       run: pwd
 
+    - name: List directory contents
+      run: ls -a
+
     - name: Verify Makefile
       run: cat Makefile && cat /Makefile
 
