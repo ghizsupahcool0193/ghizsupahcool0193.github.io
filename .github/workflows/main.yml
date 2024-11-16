@@ -16,7 +16,7 @@ jobs:
       uses: mymindstorm/setup-emsdk@v11
 
     - name: Verify Emscripten
-      run: emcc -v /src/main.cpp
+      run: emcc -v
 
     - name: Download and build Boost
       run: |
