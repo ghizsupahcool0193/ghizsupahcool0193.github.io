@@ -53,11 +53,14 @@ jobs:
 
     - name: Modify Makefile
       run: |
+       - name: Modify Makefile
+        run: |
         sed -i 's|^INCLUDE = .*|INCLUDE = -I$(BOOST_ROOT) -I/emsdk/upstream/emscripten/cache/sysroot/include -Isrc -Isrc/crypto -Isrc/common -Isrc/contrib/epee/include|' Makefile
         sed -i 's|^CCPARAM = .*|CCPARAM = -s WASM=1 -s USE_BOOST_HEADERS=1|' Makefile
         sed -i 's|^LDFLAGS = .*|LDFLAGS = -L/emsdk/upstream/emscripten/cache/sysroot/lib|' Makefile
         sed -i 's|^LIBS = .*|LIBS = /emsdk/upstream/emscripten/cache/sysroot/lib/libsodium.a|' Makefile
-
+        sed -i 's|^CFLAGS = .*|CFLAGS = -std=c++11 -g $(CCPARAM) -I/emsdk/upstream/emscripten/cache/sysroot/include|' Makefile
+    
     - name: Display modified Makefile
       run: cat Makefile
 
